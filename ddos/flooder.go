@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -21,11 +22,15 @@ func NewFlooder(url string) *flooder {
 		},
 		workerAmount: 0,
 		client:       http.DefaultClient,
+		stopSignal:   make(chan bool),
 	}
 }
 
 type Flooder interface {
 	Flood()
+	Stop()
+	SetWorkerAmount(workers uint16)
+	SetFloodTime(seconds int32)
 }
 
 type flooder struct {
@@ -35,6 +40,7 @@ type flooder struct {
 	workerAmount uint16
 	stopSignal   chan bool
 	duration     time.Duration
+	wg           sync.WaitGroup
 }
 
 func (f *flooder) Flood(startSignal ...*<-chan bool) {
@@ -45,9 +51,14 @@ func (f *flooder) Flood(startSignal ...*<-chan bool) {
 			<-(*startSignal[0])
 		}
 
-		go f.flood(defaultRequest)
+		f.wg.Add(1)
+		go func() {
+			defer f.wg.Done()
+			f.flood(defaultRequest)
+		}()
 	}
 
+	f.wg.Wait()
 }
 
 func (f flooder) configRequest() *http.Request {
@@ -57,8 +68,10 @@ func (f flooder) configRequest() *http.Request {
 	}
 
 	for _, header := range f.header {
-		splitedHeader := strings.Split(header, ":")
-		defaultRequest.Header.Add(splitedHeader[0], splitedHeader[1])
+		splitedHeader := strings.SplitN(header, ":", 2)
+		if len(splitedHeader) == 2 {
+			defaultRequest.Header.Add(strings.TrimSpace(splitedHeader[0]), strings.TrimSpace(splitedHeader[1]))
+		}
 	}
 
 	defaultRequest.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
@@ -73,8 +86,13 @@ func (f *flooder) flood(request *http.Request) {
 		default:
 			resp, err := f.client.Do(request)
 			if err == nil {
-				_, _ = io.Copy(ioutil.Discard, resp.Body)
-				_ = resp.Body.Close()
+				_, copyErr := io.Copy(ioutil.Discard, resp.Body)
+				closeErr := resp.Body.Close()
+				if copyErr != nil || closeErr != nil {
+					log.Printf("Error occurred during response body copy or close: %v, %v", copyErr, closeErr)
+				}
+			} else {
+				log.Printf("Error occurred during HTTP request: %v", err)
 			}
 		}
 		runtime.Gosched()
@@ -82,10 +100,8 @@ func (f *flooder) flood(request *http.Request) {
 }
 
 func (f *flooder) Stop() {
-	for idx := uint16(0); idx < f.workerAmount; idx++ {
-		f.stopSignal <- true
-	}
 	close(f.stopSignal)
+	f.wg.Wait()
 }
 
 func (f *flooder) SetWorkerAmount(workers uint16) {
