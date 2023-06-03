@@ -31,7 +31,7 @@ This project is developed to explore the concepts of concurrent programming and 
 ### Installation
 1. Clone the repository:
    ```shell
-   git clone https://github.com/your-username/ddos-project.git
+   git clone https://github.com/RodolfoMRibeiro/DDOS-FLOOD.git
    ```
 1. Change into the project directory:
    ```shell
