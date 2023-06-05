@@ -25,8 +25,7 @@ This project is developed to explore the concepts of concurrent programming and 
 
 ## Getting Started
 ### Prerequisites
-- Go programming language (version X.X.X)
-- Additional dependencies (if any)
+- Go programming language (version 1.19)
 
 ### Installation
 1. Clone the repository:
