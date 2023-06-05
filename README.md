@@ -41,7 +41,7 @@ This project is developed to explore the concepts of concurrent programming and 
    ```shell
    go build .
    ```
-1. Clone the repository:
+1. Run the binary file:
    ```shell
    ./ddos-flood
    ```
