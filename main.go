@@ -24,7 +24,7 @@ const intro = `
 | |              | || |              | || |              | |
 | '--------------' || '--------------' || '--------------' |
 '------------------''------------------''------------------'
-   Hello, My name is Rodolfo, and welcome to my simulator!
+   Hello, My name is Rodolfo, and welcome to my flooder!
 `
 
 func init() {
