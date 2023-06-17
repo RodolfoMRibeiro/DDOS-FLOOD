@@ -1,4 +1,4 @@
-package ddos
+package floodsimulator
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 // MULTIPLE HEADERS TO FAKE DIFFERENT REQUESTS
-var acceptall = []string{
+var acceptall = [15]string{
 	"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\nAccept-Language: en-US,en;q=0.5\nAccept-Encoding: gzip, deflate",
 	"Accept-Encoding: gzip, deflate",
 	"Accept-Language: en-US,en;q=0.5\nAccept-Encoding: gzip, deflate",
@@ -38,7 +38,7 @@ var (
 
 // FAKE SITE REFERENCER
 var (
-	referers = []string{
+	referers = [14]string{
 		"https://www.google.com/search?q=",
 		"https://check-host.net/",
 		"https://www.facebook.com/",
