@@ -2,52 +2,64 @@ package main
 
 import (
 	"bufio"
-	"ddos-flood/ddos"
+	"ddos-flood/floodsimulator"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
-func main() {
-	printIntro()
+const intro = `
+.------------------..------------------..------------------.
+| .--------------. || .--------------. || .--------------. |
+| |  _______     | || | ____    ____ | || |  _______     | |
+| | |_   __ \    | || ||_   \  /   _|| || | |_   __ \    | |
+| |   | |__) |   | || |  |   \/   |  | || |   | |__) |   | |
+| |   |  __ /    | || |  | |\  /| |  | || |   |  __ /    | |
+| |  _| |  \ \_  | || | _| |_\/_| |_ | || |  _| |  \ \_  | |
+| | |____| |___| | || ||_____||_____|| || | |____| |___| | |
+| |              | || |              | || |              | |
+| '--------------' || '--------------' || '--------------' |
+'------------------''------------------''------------------'
+   Hello, My name is Rodolfo, and welcome to my simulator!
+`
 
-	url := strings.TrimSpace(getInput("Input URL"))
-
-	threads, err := strconv.Atoi((strings.TrimSpace(getInput("Input Thread Number"))))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	attackDuration, err := strconv.Atoi(strings.TrimSpace(getInput("Input Attack Duration (seconds)")))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	flooder := ddos.NewFlooder(url, uint16(threads), uint32(attackDuration))
-	flooder.Flood()
+func init() {
+	rand.Seed(time.Now().UnixNano())
+	fmt.Print(intro)
 }
 
-func printIntro() {
-	fmt.Println(`.------------------..------------------..------------------.`)
-	fmt.Println(`| .--------------. || .--------------. || .--------------. |`)
-	fmt.Println(`| |  _______     | || | ____    ____ | || |  _______     | |`)
-	fmt.Println(`| | |_   __ \    | || ||_   \  /   _|| || | |_   __ \    | |`)
-	fmt.Println(`| |   | |__) |   | || |  |   \/   |  | || |   | |__) |   | |`)
-	fmt.Println(`| |   |  __ /    | || |  | |\  /| |  | || |   |  __ /    | |`)
-	fmt.Println(`| |  _| |  \ \_  | || | _| |_\/_| |_ | || |  _| |  \ \_  | |`)
-	fmt.Println(`| | |____| |___| | || ||_____||_____|| || | |____| |___| | |`)
-	fmt.Println(`| |              | || |              | || |              | |`)
-	fmt.Println(`| '--------------' || '--------------' || '--------------' |`)
-	fmt.Println(`'------------------''------------------''------------------'`)
-	fmt.Println("     Hello, My name is Rodolfo, and welcome to my DDOS!")
-	fmt.Println()
+func main() {
+	url := getInput("Input URL")
+	threadCount := getInput("Input Thread Number")
+	duration := getInput("Input Attack Duration (seconds)")
+
+	if threads, err := strconv.Atoi(strings.TrimSpace(threadCount)); err == nil {
+		if attackDuration, err := strconv.Atoi(strings.TrimSpace(duration)); err == nil {
+			startSimulation(url, uint16(threads), uint32(attackDuration))
+		} else {
+			log.Fatalf("Invalid attack duration: %v\n", err)
+		}
+	} else {
+		log.Fatalf("Invalid thread number: %v\n", err)
+	}
 }
 
 func getInput(prompt string) string {
 	fmt.Print(prompt + ": ")
 	reader := bufio.NewReader(os.Stdin)
-	input, _ := reader.ReadString('\n')
-	return input[:len(input)-1] // Remove the newline character
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatalf("Error reading input: %v\n", err)
+	}
+	return strings.TrimSpace(input)
+}
+
+func startSimulation(url string, threads uint16, duration uint32) {
+	flooder := floodsimulator.NewFlooder(url, threads, duration)
+
+	flooder.Start()
 }
