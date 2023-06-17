@@ -5,14 +5,19 @@ import (
 	"ddos-flood/ddos"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
-func main() {
+func init() {
+	rand.Seed(time.Now().UnixNano()) //fixed seed problem
 	printIntro()
+}
 
+func main() {
 	url := strings.TrimSpace(getInput("Input URL"))
 
 	threads, err := strconv.Atoi((strings.TrimSpace(getInput("Input Thread Number"))))
