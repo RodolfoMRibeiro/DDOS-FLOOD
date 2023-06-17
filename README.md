@@ -1,31 +1,41 @@
 # DDoS Project
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/your-username/ddos-project)](https://goreportcard.com/report/github.com/your-username/ddos-project)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A DDoS project implemented in Go to learn about concurrency and network programming.
+DDoS Project is an educational tool implemented in Go, aimed at understanding the underlying concepts of concurrency and network programming through the simulation of a Distributed Denial of Service (DDoS) attack.
+
+> :warning: **Disclaimer**: This project is for educational purposes only. Please do not use it for any illegal or malicious activities. See [Disclaimer](#disclaimer) section for more details.
 
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
 - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [Disclaimer](#disclaimer)
 - [License](#license)
 
 ## Introduction
-This project is developed to explore the concepts of concurrent programming and network communication using Go. It aims to simulate a DDoS (Distributed Denial of Service) attack, helping you understand how such attacks work and how to defend against them.
+This project serves as an educational tool for learning concurrent programming and network communication using Go. It simulates a DDoS attack, providing insights into how such attacks are orchestrated and how one can develop strategies to defend against them.
 
 ## Features
-- Simple and intuitive Go codebase for learning purposes.
-- Utilizes goroutines and channels to achieve concurrency.
-- Supports custom target URLs or IP addresses.
-- Basic logging and reporting functionalities.
+- Clean and intuitive Go codebase, ideal for educational purposes.
+- Efficiently leverages goroutines and channels for concurrency.
+- Ability to specify custom target URLs.
+- Offers basic logging and real-time reporting functionalities.
+- Enhanced control over threading.
+- Powerful and scalable flooding mechanism.
+### Default Header Settings:
+ - :white_check_mark: Random user-agents
+ - :white_check_mark: Random Accept-All
+ - :white_check_mark: Random Referrer
 
 ## Getting Started
 ### Prerequisites
-- Go programming language (version 1.19)
+- You should have Go programming language installed (version 1.19 or higher).
 
 ### Installation
 1. Clone the repository:
