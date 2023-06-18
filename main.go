@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"ddos-flood/floodsimulator"
+	"ddos-flood/ddos"
 	"fmt"
 	"log"
 	"math/rand"
@@ -24,7 +24,7 @@ const intro = `
 | |              | || |              | || |              | |
 | '--------------' || '--------------' || '--------------' |
 '------------------''------------------''------------------'
-   Hello, My name is Rodolfo, and welcome to my flooder!
+     Hello, My name is Rodolfo, and welcome to my DDoS!
 `
 
 func init() {
@@ -59,7 +59,7 @@ func getInput(prompt string) string {
 }
 
 func startSimulation(url string, threads uint16, duration uint32) {
-	flooder := floodsimulator.NewFlooder(url, threads, duration)
+	flooder := ddos.NewFlooder(url, threads, duration)
 
 	flooder.Start()
 }

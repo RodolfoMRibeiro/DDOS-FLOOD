@@ -1,4 +1,4 @@
-package floodsimulator
+package ddos
 
 import (
 	"fmt"
