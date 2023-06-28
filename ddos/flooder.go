@@ -20,9 +20,13 @@ type Flooder interface {
 	SetDuration(seconds uint32)
 }
 
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 type flooder struct {
 	url          string
-	client       *http.Client
+	client       HTTPClient
 	workerAmount uint16
 	stopSignal   chan struct{}
 	startSignal  chan struct{}
