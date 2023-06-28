@@ -1,7 +1,7 @@
 package ddos
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -63,7 +63,7 @@ func (suite *FlooderTestSuite) TestSendRequest() {
 
 	mockClient.On("Do", mock.Anything).Maybe().Return(&http.Response{
 		StatusCode: 200,
-		Body:       ioutil.NopCloser(strings.NewReader("OK")),
+		Body:       io.NopCloser(strings.NewReader("OK")),
 	}, nil)
 
 	mockClient.AssertExpectations(suite.T())
