@@ -58,10 +58,9 @@ func (suite *FlooderTestSuite) TestSetDuration() {
 
 func (suite *FlooderTestSuite) TestSendRequest() {
 	mockClient := new(MockClient)
-	flooderStruct := suite.flooder.(*flooder)
-	flooderStruct.client = mockClient
+	flooder := suite.flooder.(*flooder)
+	flooder.client = mockClient
 
-	// Mocking the http client response
 	mockClient.On("Do", mock.Anything).Maybe().Return(&http.Response{
 		StatusCode: 200,
 		Body:       ioutil.NopCloser(strings.NewReader("OK")),
